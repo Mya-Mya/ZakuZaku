@@ -66,8 +66,8 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
         }
         cutter.mouseReleased(e.getPoint());
         updateUI();
-        imageEditor.setStartCut(new Point((int)(cutter.getStartPos().x*zoom),(int)(cutter.getStartPos().y*zoom)));
-        imageEditor.setEndCut(new Point((int)(cutter.getEndPos().x*zoom),(int)(cutter.getEndPos().y*zoom)));
+        imageEditor.setStartCut(new Point((int)(cutter.getStartPos().x/zoom),(int)(cutter.getStartPos().y/zoom)));
+        imageEditor.setEndCut(new Point((int)(cutter.getEndPos().x/zoom),(int)(cutter.getEndPos().y/zoom)));
     }
 
     @Override
@@ -104,18 +104,18 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
         double oldZoom=zoom;
         zoom+=deltaZoom;
         originalWidth=imageEditor.getOriginal().getWidth();
-        originalHeight=imageEditor.getOriginal().getWidth();
+        originalHeight=imageEditor.getOriginal().getHeight();
         Dimension preSize = new Dimension((int)(originalWidth*zoom), (int)(originalHeight*zoom));
         setPreferredSize(preSize);
         cutter.setPreferredSize(preSize);
-        cutter.changeDruggerPosSize(zoom/oldZoom);
+        //cutter.changeDruggerPosSize(zoom/oldZoom);
         updateUI();
     }
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (e.isControlDown()) {
-            changeZoom(e.getWheelRotation()*0.1);
+            changeZoom(e.getWheelRotation()*0.01);
         }
     }
 }
