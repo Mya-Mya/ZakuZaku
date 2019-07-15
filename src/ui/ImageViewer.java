@@ -1,55 +1,54 @@
 package ui;
 
-import model.Config;
 import model.ImageEditor;
+import model.ImageEditorListener;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Observable;
-import java.util.Observer;
 
-public class ImageViewer extends JPanel implements MouseListener, MouseMotionListener {
-    private ImageEditor imageModel;
+public class ImageViewer extends JPanel implements MouseListener, MouseMotionListener, ImageEditorListener {
+    private ImageEditor imageEditor;
     private Cutter cutter;
+    private JPopupMenu popup;
 
-    public ImageViewer(Config config,ImageEditor imageEditor) {
+    public ImageViewer(ImageEditor imageEditor) {
         super();
-        imageModel=imageEditor;
+        this.imageEditor = imageEditor;
+        this.imageEditor.addImageEditorListener(this);
         addMouseListener(this);
         addMouseMotionListener(this);
-        cutter = new Cutter(config);
-    }
-
-    public void imageEditorChanged() {
-        Dimension preSize = new Dimension(
-                imageModel.getOriginal().getWidth(), imageModel.getOriginal().getWidth());
-        setPreferredSize(preSize);
-        cutter.setPreferredSize(preSize);
-        cutter.resetDruggerPos();
-        updateUI();
+        popup=new JPopupMenu();
+        popup.add("保存");
+        add(popup);
+        cutter = new Cutter();
     }
 
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (imageModel == null) {
+        if (imageEditor == null) {
             return;
         }
         Graphics2D g2 = (Graphics2D) g;
-        g2.drawImage(imageModel.getOriginal(), null, 0, 0);
+        g2.drawImage(imageEditor.getOriginal(), null, 0, 0);
         cutter.draw(g2);
     }
 
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if(SwingUtilities.isRightMouseButton(e)){
+            popup.setLocation(e.getX(),e.getY());
+            popup.setVisible(true);
+        }
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (imageModel == null) {
+        if (imageEditor == null) {
             return;
         }
         cutter.mousePressed(e.getPoint());
@@ -57,13 +56,13 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (imageModel == null) {
+        if (imageEditor == null) {
             return;
         }
         cutter.mouseReleased(e.getPoint());
         updateUI();
-        imageModel.setStartCut(cutter.getStartPos());
-        imageModel.setEndCut(cutter.getEndPos());
+        imageEditor.setStartCut(cutter.getStartPos());
+        imageEditor.setEndCut(cutter.getEndPos());
     }
 
     @Override
@@ -78,7 +77,7 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (imageModel == null) {
+        if (imageEditor == null) {
             return;
         }
         cutter.mouseMoving(e.getPoint());
@@ -88,5 +87,14 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
     @Override
     public void mouseMoved(MouseEvent e) {
 
+    }
+
+    @Override
+    public void originalImageChanged() {
+        Dimension preSize = new Dimension(imageEditor.getOriginal().getWidth(), imageEditor.getOriginal().getWidth());
+        setPreferredSize(preSize);
+        cutter.setPreferredSize(preSize);
+        cutter.resetDruggerPos();
+        updateUI();
     }
 }

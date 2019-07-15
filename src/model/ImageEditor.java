@@ -1,25 +1,28 @@
 package model;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Observable;
+import java.util.ArrayList;
 
-public class ImageEditor  {
+public class ImageEditor implements CutImageSaveable,ImageLoadable {
     private BufferedImage original;
     private Point startCut = new Point(0, 0);
     private Point endCut = new Point(0, 0);
+    private java.util.List<ImageEditorListener> listenerList=new ArrayList<>();
 
     public ImageEditor() {
     }
 
-    public void openFile(File imageFile)throws Exception{
+    public void openImage(File imageFile) throws Exception {
         original = ImageIO.read(imageFile);
     }
-    public boolean isMeetingMinimumDimension(){
-        return original.getWidth()>Config.MIN_IMAGE_WIDTH&&original.getHeight()>Config.MIN_IMAGE_HEIGHT;
+
+    public boolean isMeetingMinimumDimension() {
+        return original.getWidth() > Repository.MIN_IMAGE_WIDTH && original.getHeight() > Repository.MIN_IMAGE_HEIGHT;
     }
 
     public BufferedImage getOriginal() {
@@ -43,37 +46,43 @@ public class ImageEditor  {
         return Math.abs(endCut.y - startCut.y);
     }
 
-    public void saveCutImage(File directory,String name){
-        File target=new File(directory.toString()+"\\"+name+".png");
-        BufferedImage out=original.getSubimage(startCut.x,startCut.y,getCutWidth(),getCutHeight());
-        try{
-            ImageIO.write(out,"png",target);
-        }catch (IOException e){
+    @Override
+    public void saveCutImage(File directory, String name) {
+        File target = new File(directory.toString() + "\\" + name + ".png");
+        BufferedImage out = original.getSubimage(startCut.x, startCut.y, getCutWidth(), getCutHeight());
+        try {
+            ImageIO.write(out, "png", target);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    @Deprecated
-    public BufferedImage cut() {
-        int[] originalMap = new int[original.getWidth() * original.getHeight()];
-        original.getRGB(0, 0, original.getWidth(), original.getHeight(),
-                originalMap, 0, original.getWidth());
-
-        int width = getCutWidth();
-        int height = getCutHeight();
-        int[] outMap = new int[width * height];
-        BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                int originalR = startCut.y + i;
-                int originalC = startCut.x + j;
-                int originalInd = originalR * original.getWidth() + originalC;
-                int outInd = i * width + j;
-                outMap[outInd] = originalMap[originalInd];
+    @Override
+    public void loadOriginalImage() {
+        JFileChooser fc = new JFileChooser(Repository.inst().currentDirectory);
+        int selected = fc.showOpenDialog(Repository.inst().window);
+        if (selected == JFileChooser.APPROVE_OPTION) {
+            Repository.inst().currentDirectory=fc.getCurrentDirectory();
+            try{
+                openImage(fc.getSelectedFile());
+            }catch (Exception e){
+                JOptionPane.showMessageDialog(Repository.inst().window,"お前なんかしたか");
+                loadOriginalImage();
             }
+            if(!isMeetingMinimumDimension()){
+                JOptionPane.showMessageDialog(Repository.inst().window,"小さすぎ");
+                loadOriginalImage();
+            }
+        } else {
+            System.exit(0);
         }
-        out.setRGB(0, 0, original.getWidth(), original.getHeight(), outMap, 0, original.getWidth());
-        return out;
+        notifyImageEditorListener();
     }
 
+    public void addImageEditorListener(ImageEditorListener l){
+        listenerList.add(l);
+    }
+    private void notifyImageEditorListener(){
+        for(ImageEditorListener l:listenerList)l.originalImageChanged();
+    }
 }

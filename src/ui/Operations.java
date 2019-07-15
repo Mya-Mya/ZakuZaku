@@ -3,25 +3,23 @@ package ui;
 import model.*;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class Operations extends JToolBar implements ActionListener {
-    private Config config;
+public class Operations extends JToolBar implements ActionListener,SavingFileNameGetter {
     private JButton btLoad;
     private JComboBox<String> cmbCutAspect;
     private JButton btSave;
     private JTextField tfFileName;
-    private ImageEditor imageEditor;
+
+    private CutImageSaveable cutImageSaver;
     private String latestFileName;
     private FileNamer fileNamer;
     private ImageLoadable imageLoader;
 
-    public Operations(Config config, ImageEditor imageEditor, ImageLoadable imageLoader) {
+    public Operations(CutImageSaveable cutImageSaver, ImageLoadable imageLoader) {
         super();
-        this.config = config;
-        this.imageEditor = imageEditor;
+        this.cutImageSaver = cutImageSaver;
         this.imageLoader=imageLoader;
         fileNamer=new DefaultFileNamer();
 
@@ -48,14 +46,14 @@ public class Operations extends JToolBar implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==btLoad){
-            imageLoader.loadImage();
+            imageLoader.loadOriginalImage();
         }
         if (e.getSource() == cmbCutAspect) {
-            config.cutAspect = CutAspect.fromString((String) cmbCutAspect.getSelectedItem());
+            Repository.inst().cutAspect = CutAspect.fromString((String) cmbCutAspect.getSelectedItem());
         }
         if (e.getSource() == btSave) {
-            latestFileName=tfFileName.getText();
-            imageEditor.saveCutImage(config.currentDirectory, latestFileName);
+            latestFileName=getSavingFileName();
+            cutImageSaver.saveCutImage(Repository.inst().currentDirectory, latestFileName);
             tfFileName.setText(fileNamer.getNext(latestFileName));
         }
         if (e.getSource() == tfFileName) {
@@ -65,5 +63,10 @@ public class Operations extends JToolBar implements ActionListener {
                 btSave.setEnabled(true);
             }
         }
+    }
+
+    @Override
+    public String getSavingFileName() {
+        return tfFileName.getText();
     }
 }

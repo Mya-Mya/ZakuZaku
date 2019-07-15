@@ -1,12 +1,12 @@
 package ui;
 
-import model.Config;
+import model.CutAspect;
+import model.Repository;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class Cutter extends JComponent {
-    private Config config;
     private Drugger startDragger;
     private Drugger endDragger;
     private Color c0 = new Color(43, 196, 75);
@@ -14,18 +14,17 @@ public class Cutter extends JComponent {
     private Color c2 = new Color(255, 0, 82);
     private int minDistance = 25;
     private int druggingSize = 12;
-    private int width=Config.MIN_IMAGE_WIDTH;
-    private int height=Config.MIN_IMAGE_HEIGHT;
+    private int width= Repository.MIN_IMAGE_WIDTH;
+    private int height= Repository.MIN_IMAGE_HEIGHT;
 
-    public Cutter(Config config) {
+    public Cutter() {
         super();
-        this.config = config;
         resetDruggerPos();
     }
 
     public void resetDruggerPos() {
         startDragger = new Drugger(new Point(0,0), c0, druggingSize);
-        endDragger = new Drugger(new Point(Config.MIN_IMAGE_WIDTH,Config.MIN_IMAGE_HEIGHT), c1, druggingSize);
+        endDragger = new Drugger(new Point(Repository.MIN_IMAGE_WIDTH, Repository.MIN_IMAGE_HEIGHT), c1, druggingSize);
         checkDraggers();
     }
 
@@ -68,9 +67,9 @@ public class Cutter extends JComponent {
             width = endDragger.pos.x - startDragger.pos.x;
             height = endDragger.pos.y - startDragger.pos.y;
 
-            if (config.cutAspect != CutAspect.nothing) {//アスペクト比の調整
+            if (Repository.inst().cutAspect != CutAspect.nothing) {//アスペクト比の調整
                 double nowRatio = (double) height / (double) width;
-                double targetRatio = config.cutAspect.getRatio();
+                double targetRatio = Repository.inst().cutAspect.getRatio();
                 if (nowRatio < targetRatio) {//アスペクト比が縦に短い
                     endDragger.pos.x = ((int) (startDragger.pos.x + height / targetRatio));
                 }

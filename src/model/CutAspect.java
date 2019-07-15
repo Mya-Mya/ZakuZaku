@@ -1,4 +1,4 @@
-package ui;
+package model;
 
 public enum CutAspect {
     _16x9,
@@ -21,7 +21,7 @@ public enum CutAspect {
         return super.toString();
     }
 
-    double getRatio() {
+    public double getRatio() {
         switch (this) {
             case _16x9:
                 return 0.5625;
