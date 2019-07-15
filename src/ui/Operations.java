@@ -52,9 +52,7 @@ public class Operations extends JToolBar implements ActionListener,SavingFileNam
             Repository.inst().cutAspect = CutAspect.fromString((String) cmbCutAspect.getSelectedItem());
         }
         if (e.getSource() == btSave) {
-            latestFileName=getSavingFileName();
-            cutImageSaver.saveCutImage(Repository.inst().currentDirectory, latestFileName);
-            tfFileName.setText(fileNamer.getNext(latestFileName));
+            invokeSaveCutImage();
         }
         if (e.getSource() == tfFileName) {
             if (tfFileName.getText().isEmpty()) {
@@ -68,5 +66,11 @@ public class Operations extends JToolBar implements ActionListener,SavingFileNam
     @Override
     public String getSavingFileName() {
         return tfFileName.getText();
+    }
+
+    public void invokeSaveCutImage(){//todo これをインターフェース化してしまえばいい
+        latestFileName=getSavingFileName();
+        cutImageSaver.saveCutImage(Repository.inst().currentDirectory, latestFileName);
+        tfFileName.setText(fileNamer.getNext(latestFileName));
     }
 }

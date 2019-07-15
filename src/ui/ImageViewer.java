@@ -42,7 +42,7 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
     public void mouseClicked(MouseEvent e) {
         if(SwingUtilities.isRightMouseButton(e)){
             popup.setLocation(e.getX(),e.getY());
-            popup.setVisible(true);
+            popup.setVisible(true);//todo 消せない押せない
         }
     }
 
