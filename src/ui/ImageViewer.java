@@ -8,10 +8,14 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.*;
 
-public class ImageViewer extends JPanel implements MouseListener, MouseMotionListener, ImageEditorListener {
+public class ImageViewer extends JPanel implements MouseListener, MouseMotionListener, ImageEditorListener, MouseWheelListener {
     private ImageEditor imageEditor;
     private Cutter cutter;
     private JPopupMenu popup;
+
+    private int originalWidth;
+    private int originalHeight;
+    private double zoom=1;
 
     public ImageViewer(ImageEditor imageEditor) {
         super();
@@ -19,6 +23,7 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
         this.imageEditor.addImageEditorListener(this);
         addMouseListener(this);
         addMouseMotionListener(this);
+        addMouseWheelListener(this);
         popup=new JPopupMenu();
         popup.add("保存");
         add(popup);
@@ -33,7 +38,7 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
             return;
         }
         Graphics2D g2 = (Graphics2D) g;
-        g2.drawImage(imageEditor.getOriginal(), null, 0, 0);
+        g2.drawImage(imageEditor.getOriginal(),0,0,(int)(originalWidth*zoom),(int)(originalHeight*zoom),this);
         cutter.draw(g2);
     }
 
@@ -61,8 +66,8 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
         }
         cutter.mouseReleased(e.getPoint());
         updateUI();
-        imageEditor.setStartCut(cutter.getStartPos());
-        imageEditor.setEndCut(cutter.getEndPos());
+        imageEditor.setStartCut(new Point((int)(cutter.getStartPos().x*zoom),(int)(cutter.getStartPos().y*zoom)));
+        imageEditor.setEndCut(new Point((int)(cutter.getEndPos().x*zoom),(int)(cutter.getEndPos().y*zoom)));
     }
 
     @Override
@@ -91,10 +96,26 @@ public class ImageViewer extends JPanel implements MouseListener, MouseMotionLis
 
     @Override
     public void originalImageChanged() {
-        Dimension preSize = new Dimension(imageEditor.getOriginal().getWidth(), imageEditor.getOriginal().getWidth());
+        changeZoom(0);
+        cutter.resetDruggerPos();
+    }
+
+    private void changeZoom(double deltaZoom){
+        double oldZoom=zoom;
+        zoom+=deltaZoom;
+        originalWidth=imageEditor.getOriginal().getWidth();
+        originalHeight=imageEditor.getOriginal().getWidth();
+        Dimension preSize = new Dimension((int)(originalWidth*zoom), (int)(originalHeight*zoom));
         setPreferredSize(preSize);
         cutter.setPreferredSize(preSize);
-        cutter.resetDruggerPos();
+        cutter.changeDruggerPosSize(zoom/oldZoom);
         updateUI();
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        if (e.isControlDown()) {
+            changeZoom(e.getWheelRotation()*0.1);
+        }
     }
 }

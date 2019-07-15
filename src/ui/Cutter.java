@@ -28,6 +28,13 @@ public class Cutter extends JComponent {
         checkDraggers();
     }
 
+    public void changeDruggerPosSize(double v) {
+        startDragger.pos.x*=v;
+        startDragger.pos.y*=v;
+        endDragger.pos.x*=v;
+        endDragger.pos.y*=v;
+    }
+
 
     public void draw(Graphics2D g2) {
         startDragger.draw(g2);
@@ -98,6 +105,8 @@ public class Cutter extends JComponent {
     public Point getEndPos() {
         return endDragger.pos;
     }
+
+
 
     private class Drugger {
         private Point pos;
